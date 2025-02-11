@@ -2,6 +2,7 @@
 #define __ORANGE_LOG_H__
 
 #include "singleton.h"
+#include "util.h"
 #include <string>
 #include <stdint.h>
 #include <memory>
@@ -78,6 +79,11 @@
  * @brief 使用格式化模式将日志级别为FATAL的日志写入logger
  */
 #define ORANGE_LOG_FMT_FATAL(logger, fmt, ...) ORANGE_LOG_FMT_LEVEL(logger, LogLevel::FATAL, fmt, __VA_ARGS__)
+
+/**
+ * @brief 获取默认的根配置器
+ */
+#define ORANGE_LOG_ROOT() orange::LoggerMgrPtr::GetInstance()->getRoot()
 
 namespace orange{
 
@@ -298,6 +304,7 @@ class LoggerManager
 public:
     LoggerManager();
     Logger::ptr getLogger(const std::string& name);
+    Logger::ptr getRoot() { return m_root; }
     void init();
 private:
     // 日志器的存储结构
@@ -306,7 +313,7 @@ private:
     Logger::ptr m_root;
 };
 
-typedef Singleton<LoggerManager> LogMgrPtr;
+typedef Singleton<LoggerManager> LoggerMgrPtr;
  
 }
 

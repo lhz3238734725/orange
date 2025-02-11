@@ -31,7 +31,7 @@ int main(int argc, char** argv){
     ORANGE_LOG_FMT_ERROR(logger, "ERROR %d Hello orange %s", 4, "Success");
     ORANGE_LOG_FMT_FATAL(fileLogger, "FATAL %d Hello orange %s", 5, "Success");
 
-    auto l = LogMgrPtr::GetInstance()->getLogger("xx");
+    auto l = LoggerMgrPtr::GetInstance()->getLogger("xx");
     ORANGE_LOG_FATAL(l) << "Test LoggerManager Success";
 
     return 0;
