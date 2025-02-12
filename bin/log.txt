@@ -1,2 +1,2 @@
-[root][FATAL][2025-02-11 05:56:49][/home/test/Desktop/workspace/orange/tests/test_log.cpp][26][72725][0]	FATAL Hello orange Success
-[root][FATAL][2025-02-11 05:56:49][/home/test/Desktop/workspace/orange/tests/test_log.cpp][32][72725][0]	FATAL 5 Hello orange Success
+[root][FATAL][2025-02-12 03:49:52][/home/test/Desktop/workspace/orange/tests/test_log.cpp][26][78628][0]	FATAL Hello orange Success
+[root][FATAL][2025-02-12 03:49:52][/home/test/Desktop/workspace/orange/tests/test_log.cpp][32][78628][0]	FATAL 5 Hello orange Success

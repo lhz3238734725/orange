@@ -8,5 +8,7 @@ include_directories(.)
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
+find_package(yaml-cpp REQUIRED)
+
 add_subdirectory(src)
 add_subdirectory(tests)
