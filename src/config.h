@@ -114,14 +114,14 @@ public:
     
     /**
      * @brief 将yaml节点中的数据读入配置管理器中的配置项
-     * @param[in] root YANL节点
+     * @param[in] root YAML节点
      */
     static void LoadFromTaml(const YAML::Node& root);
 
     /**
      * @brief 从配置管理器中查找key为name的配置项
      * @param[in] name 配置项名称
-     * @return 配置项 未找到返回 nullptr
+     * @return 配置项 未找到返回nullptr
      */
     static ConfigVarBase::ptr LookupBase(const std::string& name);
 
