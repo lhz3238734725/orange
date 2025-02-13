@@ -5,6 +5,7 @@
 #include <memory>
 #include <sstream>
 #include <boost/lexical_cast.hpp>
+#include <yaml-cpp/yaml.h>
 
 namespace orange{
 
@@ -17,6 +18,8 @@ public:
     ConfigVarBase(const std::string& name, const std::string& description = "")
         : m_name(name)
         , m_description(description) {
+        // 将字符串转成小写
+        std::transform(m_name.begin(), m_name.end(), m_name.begin(), ::tolower);
     }
     ~ConfigVarBase() = default;
 
@@ -88,7 +91,7 @@ public:
             return tmp;
         }
 
-        if(name.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ._0123456789") != std::string::npos){
+        if(name.find_first_not_of("abcdefghijklmnopqrstuvwxyz._0123456789") != std::string::npos){
             ORANGE_LOG_ERROR(ORANGE_LOG_ROOT()) << "Lookup name=" << name << "invalid";
             throw std::invalid_argument(name);
         }
@@ -107,7 +110,20 @@ public:
 
         // dynamic_pointer_cast 用于智能指针之间的动态类型转换
         return std::dynamic_pointer_cast<ConfigVar<T>>(it->second);
-    } 
+    }
+    
+    /**
+     * @brief 将yaml节点中的数据读入配置管理器中的配置项
+     * @param[in] root YANL节点
+     */
+    static void LoadFromTaml(const YAML::Node& root);
+
+    /**
+     * @brief 从配置管理器中查找key为name的配置项
+     * @param[in] name 配置项名称
+     * @return 配置项 未找到返回 nullptr
+     */
+    static ConfigVarBase::ptr LookupBase(const std::string& name);
 
 private:
     static ConfigVarMap m_datas;

@@ -34,6 +34,15 @@ void tes_yaml(){
     print_yaml(root, 0);
 }
 
+void test_config() {
+    ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << "before " << g_int_value_config->toString();
+    ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << "before " << g_float_value_config->toString();
+    YAML::Node root = YAML::LoadFile("./config/log.yaml");
+    Config::LoadFromTaml(root);
+    ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << "after " << g_int_value_config->toString();
+    ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << "after " << g_float_value_config->toString();
+}
+
 int main(int argc, char** argv){
 
     ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << g_int_value_config->getValue();
@@ -46,6 +55,8 @@ int main(int argc, char** argv){
     ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << g_char_value_config->toString();
 
     tes_yaml();
+
+    test_config();
 
     return 0;
 }
