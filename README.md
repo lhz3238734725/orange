@@ -13,7 +13,7 @@
 系统：ubutun2004  
 依赖库安装：
 ``` shell
-sudo apt install libboost1.67-dev libyaml-cpp-dev -y
+sudo apt install libboost1.67-dev libyaml-cpp-dev g++ -y
 ```
 
 ## 项目目录结构
