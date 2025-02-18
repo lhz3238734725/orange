@@ -7,13 +7,14 @@
 | 2025.2.8 ~ 2025.2.10| 日志系统初步完成 |
 | 2025.2.11 | 配置系统添加基础配置项 |
 | 2025.2.12 | 测试yaml-cpp的使用 |
-| 2025.2.13 | yaml-cppj集成到配置系统 |
+| 2025.2.13 | yaml-cpp集成到配置系统 |
+| 2025.2.18 | 复杂类型 std::vector<普通类型> 的支持 |
 
 ## 环境搭建
 系统：ubutun2004  
 依赖库安装：
 ``` shell
-sudo apt install libboost1.67-dev libyaml-cpp-dev -y
+sudo apt install libboost1.67-dev libyaml-cpp-dev g++ -y
 ```
 
 ## 项目目录结构

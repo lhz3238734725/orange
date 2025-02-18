@@ -16,3 +16,4 @@ log:
 system:
     port: 9000
     float: 1.22
+    vec_int: {1, 2}

@@ -7,6 +7,7 @@ using namespace orange;
 ConfigVar<int>::ptr g_int_value_config = Config::Lookup("system.port", int(800), "system port");
 ConfigVar<float>::ptr g_float_value_config = Config::Lookup("system.float", 1.1111f, "system float");
 ConfigVar<char>::ptr g_char_value_config = Config::Lookup("system.char", 'a', "system char");
+ConfigVar<std::vector<int>>::ptr g_vec_int_value_config = Config::Lookup("system.vec_int", std::vector<int>{1, 2}, "system vec_int");
 
 // yaml-cpp 的简单使用
 void print_yaml(const YAML::Node& node, int level){
@@ -37,10 +38,18 @@ void tes_yaml(){
 void test_config() {
     ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << "before " << g_int_value_config->toString();
     ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << "before " << g_float_value_config->toString();
+    for (auto& i :  g_vec_int_value_config->getValue())
+    {
+        ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << "before vec_int: " << i;
+    }
     YAML::Node root = YAML::LoadFile("./config/log.yaml");
     Config::LoadFromTaml(root);
     ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << "after " << g_int_value_config->toString();
     ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << "after " << g_float_value_config->toString();
+    for (auto& i :  g_vec_int_value_config->getValue())
+    {
+        ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << "after vec_int: " << i;
+    }
 }
 
 int main(int argc, char** argv){
@@ -53,6 +62,8 @@ int main(int argc, char** argv){
 
     ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << g_char_value_config->getValue();
     ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << g_char_value_config->toString();
+
+    ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << g_vec_int_value_config->toString();
 
     tes_yaml();
 
