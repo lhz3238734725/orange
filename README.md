@@ -9,6 +9,7 @@
 | 2025.2.12 | 测试yaml-cpp的使用 |
 | 2025.2.13 | yaml-cpp集成到配置系统 |
 | 2025.2.18 | 复杂类型 std::vector<普通类型> 的支持 |
+| 2025.2.19 | 更多容器的支持 std::list std::set std::unordered_set std::map std::unordered_map |
 
 ## 环境搭建
 系统：ubutun2004  
@@ -26,3 +27,9 @@ cmake cmake函数目录
 src   源码目录
 tests 测试代码目录
 ```
+
+## 项目内容
+
+### 日志系统
+
+### 配置系统

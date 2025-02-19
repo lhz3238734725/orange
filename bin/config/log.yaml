@@ -16,4 +16,13 @@ log:
 system:
     port: 9000
     float: 1.22
-    vec_int: {1, 2}
+    vec_int: [1, 2]
+    list_int: [20, 11]
+    set_int: [100, 300]
+    unordered_set_int:
+        - 111111
+        - 222222
+    map_str_int: {"1": 11111, "2": 2222222}
+    unordered_map_str_int:
+        1: 1211111
+        2: 4444444
