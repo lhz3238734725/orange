@@ -8,6 +8,7 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <sstream>
+#include <functional>
 #include <boost/lexical_cast.hpp>
 #include <yaml-cpp/yaml.h>
 
@@ -32,6 +33,7 @@ public:
 
     virtual std::string toString() = 0;
     virtual bool fromString(const std::string& val) = 0;
+    virtual std::string getTypeName() = 0;
 protected:
     std::string m_name;
     std::string m_description;
@@ -303,6 +305,7 @@ template<class T, class FromStr = LexicalCast<std::string, T>, class ToStr = Lex
 class ConfigVar : public ConfigVarBase {
 public:
     typedef std::shared_ptr<ConfigVar> ptr;
+    typedef std::function<void (const T& old_value, const T& new_value)> on_change_cb;
 
     ConfigVar(const std::string& name, const T& default_value, const std::string& description = "") 
         : ConfigVarBase(name, description)
@@ -310,6 +313,9 @@ public:
 
     }
 
+    /**
+     * @brief 将 T 类型数据转换成 std::string
+     */
     std::string toString() override{
         try{
             return ToStr()(m_val);
@@ -321,6 +327,9 @@ public:
         }
     }
 
+    /**
+     * @brief 将 std::string 转换成 T 类型数据
+     */
     bool fromString(const std::string& val) override{
         try{
             setValue(FromStr()(val)); 
@@ -332,10 +341,65 @@ public:
         return true;
     }
 
+    /**
+     * @brief 获取 T 的类型
+     */
+    std::string getTypeName() override{ return typeid(m_val).name();}
+
+    /**
+     * @brief 获取配置项的值
+     */
     const T getValue() const { return m_val; }
-    void setValue(const T& val) { m_val = val; }
+
+    /**
+     * @brief 设置配置项的值，如果不相同通知回调事件
+     */
+    void setValue(const T& val) {
+
+        if(m_val == val) return;
+        for(auto& i : m_cbs){
+            i.second(m_val, val);
+        } 
+        m_val = val;
+    }
+    
+    /**
+     * @brief 添加监听回调，key值从1开始逐步递增
+     */
+    uint64_t addListener(on_change_cb cb){
+        static uint64_t s_fun_id = 0;
+        ++s_fun_id;
+        m_cbs[s_fun_id] = cb;
+        return s_fun_id;
+    }
+
+    /**
+     * @brief 删除监听回调
+     */
+    void delListener(uint64_t key){
+        m_cbs.erase(key);
+    }
+
+    /**
+     * @brief 获取监听回调
+     */
+    on_change_cb getListener(uint64_t key){
+
+        auto it = m_cbs.find(key);
+        return it == m_cbs.end() ? nullptr : it;
+    }
+
+    /**
+     * @brief 清空监听回调
+     */
+    void clearListener() {
+        m_cbs.clear();
+    }
+
 private:
     T m_val;
+    // 变更回调数组，key值要求唯一，一般用hash
+    std::map<uint64_t, on_change_cb> m_cbs;
 };
 
 /**
@@ -345,12 +409,24 @@ class Config {
 public:
     typedef std::map<std::string, ConfigVarBase::ptr> ConfigVarMap;
 
+    /**
+     * @brief 查找配置项，如果已存在，返回已存在的配置项；不存在则添加
+     */
     template<class T>
     static typename ConfigVar<T>::ptr Lookup(const std::string& name, const T& default_value, const std::string& description = ""){
-        auto tmp = Lookup<T>(name);
-        if(tmp){
-            ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << "Lookup name=" << name << "exists";
-            return tmp;
+
+        // 解决相同key，类型不同不报错的情况
+        auto it = m_datas.find(name);
+        if(it != m_datas.end()){
+            auto tmp = std::dynamic_pointer_cast<ConfigVar<T>>(it->second);
+            if(tmp) {
+                ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << "Lookup name=" << name << "exists";
+                return tmp;
+            }else {
+                ORANGE_LOG_ERROR(ORANGE_LOG_ROOT()) << "Lookup name=" << name << " exists but type not "
+                    << typeid(T).name() << " real_type=" <<  it->second->getTypeName() << " " << it->second->toString();
+                return nullptr;
+            }
         }
 
         if(name.find_first_not_of("abcdefghijklmnopqrstuvwxyz._0123456789") != std::string::npos){
@@ -363,6 +439,9 @@ public:
         return v;
     } 
     
+    /**
+     * @brief 查找配置项，如果已存在，返回已存在的配置项；不存在返回nullptr
+     */
     template<class T>
     static typename ConfigVar<T>::ptr Lookup(const std::string& name){
         auto it = m_datas.find(name);

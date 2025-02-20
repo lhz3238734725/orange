@@ -26,3 +26,34 @@ system:
     unordered_map_str_int:
         1: 1211111
         2: 4444444
+
+class:
+    person:
+        name: "lll"
+        age: 1000
+        sex: true
+        ints:
+            - 1
+            - 2
+            - 2
+    person_map:
+        p_map_1:
+            name: "222"
+            age: 30000
+            sex: false
+            ints: [1]
+        p_map_2:
+            name: "3333"
+            age: 40000
+            sex: true
+            ints: [1]
+    person_map_vec:
+        p_map_vec_1: 
+            - name: "3"
+              age: 111
+              sex: true
+              ints:
+            - name: "4"
+              age: 111
+              sex: true
+              ints:

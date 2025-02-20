@@ -5,6 +5,7 @@
 using namespace orange;
 
 ConfigVar<int>::ptr g_int_value_config = Config::Lookup("system.port", int(800), "system port");
+ConfigVar<float>::ptr g_f_value_config = Config::Lookup("system.port", float(800), "system port");
 ConfigVar<float>::ptr g_float_value_config = Config::Lookup("system.float", 1.1111f, "system float");
 ConfigVar<char>::ptr g_char_value_config = Config::Lookup("system.char", 'a', "system char");
 ConfigVar<std::vector<int>>::ptr g_vec_int_value_config = Config::Lookup("system.vec_int", std::vector<int>{1, 2}, "system vec_int");
@@ -41,60 +42,122 @@ void tes_yaml(){
 }
 
 void test_config() {
+#define XX(g_var, prefix, name)   \
+    for (auto& i :  g_var->getValue()) \
+    {   \
+        ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << #prefix":"#name" " << i;  \
+    }
+
+#define XX_PM(g_var, prefix, name)   \
+    for (auto& i :  g_var->getValue()) \
+    {   \
+        ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << #prefix":"#name" " << i.first << " : " << i.second;   \
+    }
+
     ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << "before " << g_int_value_config->toString();
     ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << "before " << g_float_value_config->toString();
-    for (auto& i :  g_vec_int_value_config->getValue())
-    {
-        ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << "before vec_int: " << i;
-    }
-    for (auto& i :  g_list_int_value_config->getValue())
-    {
-        ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << "before list_int: " << i;
-    }
-    for (auto& i :  g_set_int_value_config->getValue())
-    {
-        ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << "before set_int: " << i;
-    }
-    for (auto& i :  g_unordered_set_int_value_config->getValue())
-    {
-        ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << "before set_int: " << i;
-    }
-    for (auto& i :  g_map_str_int_value_config->getValue())
-    {
-        ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << "before map_str_int: " << i.first << " : " << i.second ;
-    }
-    for (auto& i :  g_unordered_map_str_int_value_config->getValue())
-    {
-        ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << "before unordered_map_str_int: " << i.first << " : " << i.second ;
-    }
+    
+    XX(g_vec_int_value_config, before, vec_int);
+    XX(g_list_int_value_config, before, list_int);
+    XX(g_set_int_value_config, before, set_int);
+    XX(g_unordered_set_int_value_config, before, uset_int);
+    XX_PM(g_map_str_int_value_config, before, map_str_int);
+    XX_PM(g_unordered_map_str_int_value_config, before, umap_str_int);
 
     YAML::Node root = YAML::LoadFile("./config/log.yaml");
     Config::LoadFromTaml(root);
+
     ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << "after " << g_int_value_config->toString();
     ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << "after " << g_float_value_config->toString();
-    for (auto& i :  g_vec_int_value_config->getValue())
-    {
-        ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << "after vec_int: " << i;
+    XX(g_vec_int_value_config, after, vec_int);
+    XX(g_list_int_value_config, after, list_int);
+    XX(g_set_int_value_config, after, set_int);
+    XX(g_unordered_set_int_value_config, after, uset_int);
+    XX_PM(g_map_str_int_value_config, after, map_str_int);
+    XX_PM(g_unordered_map_str_int_value_config, after, umap_str_int);
+
+#undef XX
+#undef XX_PM
+}
+
+class Person{
+public:
+    std::string name;
+    int age = 0;
+    bool sex = 0;
+    std::vector<int> ints;
+
+    std::string toString() const{
+        std::stringstream ss;
+        ss << "{ Person : name=" << name << ", " 
+           << "age=" << age << "," 
+           << "sex=" << sex << "}";
+        return ss.str();
     }
-    for (auto& i :  g_list_int_value_config->getValue())
-    {
-        ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << "after list_int: " << i;
+
+    bool operator== (const Person& person) const{
+        return name == person.name && age == person.age && sex == person.sex;
     }
-    for (auto& i :  g_set_int_value_config->getValue())
-    {
-        ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << "after set_int: " << i;
+};
+
+namespace orange{
+template<>
+class LexicalCast<std::string, Person>{
+public:
+    Person operator()(const std::string& v){
+        YAML::Node node = YAML::Load(v);
+        Person p;
+        p.name = node["name"].as<std::string>();
+        p.age = node["age"].as<int>();
+        p.sex = node["sex"].as<bool>();
+
+        return p;
     }
-    for (auto& i :  g_unordered_set_int_value_config->getValue())
-    {
-        ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << "after set_int: " << i;
+};
+
+template<>
+class LexicalCast<Person, std::string>{
+public:
+    std::string operator()(const Person& p){
+        YAML::Node node;
+        node["name"] = p.name;
+        node["age"] = p.age;
+        node["sex"] = p.sex;
+
+        std::stringstream ss;
+        ss << node;
+        return ss.str();
     }
-    for (auto& i :  g_map_str_int_value_config->getValue())
-    {
-        ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << "after map_str_int: " << i.first << " : " << i.second ;
+};
+}
+
+void test_class(){
+    ConfigVar<Person>::ptr g_person = Config::Lookup("class.person", Person(), "class person");
+    ConfigVar<std::map<std::string, Person>>::ptr g_person_map = Config::Lookup("class.person_map", std::map<std::string, Person>(), "class person_map");
+    ConfigVar<std::map<std::string, std::vector<Person>>>::ptr g_person_map_vec = Config::Lookup("class.person_map_vec", std::map<std::string, std::vector<Person>>(), "class person_map_vec");
+
+    ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << "before:" << g_person->getValue().toString();
+    g_person->addListener([](const Person& old_value, const Person& new_value){
+        ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << old_value.toString();
+        ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << new_value.toString();
+    });
+
+    for(auto& i : g_person_map->getValue()){
+        ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << "before:" << i.first <<" " << i.second.toString();
     }
-    for (auto& i :  g_unordered_map_str_int_value_config->getValue())
-    {
-        ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << "after unordered_map_str_int: " << i.first << " : " << i.second ;
+    YAML::Node root = YAML::LoadFile("./config/log.yaml");
+    Config::LoadFromTaml(root);
+
+    ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << "after:" << g_person->getValue().toString();
+    for(auto& i : g_person_map->getValue()){
+        ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << "after:" << i.first <<" " << i.second.toString();
+    }
+
+    for(auto& i : g_person_map_vec->getValue()){
+        ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << "after:" << i.first <<" ";
+        for(auto& it : i.second){
+            ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << it.toString();
+        }
     }
 }
 
@@ -102,28 +165,20 @@ int main(int argc, char** argv){
 
     ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << g_int_value_config->getValue();
     ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << g_int_value_config->toString();
-
     ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << g_float_value_config->getValue();
     ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << g_float_value_config->toString();
-
     ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << g_char_value_config->getValue();
     ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << g_char_value_config->toString();
-
     ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << g_vec_int_value_config->toString();
-
     ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << g_list_int_value_config->toString();
-
     ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << g_set_int_value_config->toString();
-
     ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << g_unordered_set_int_value_config->toString();
-
     ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << g_map_str_int_value_config->toString();
-
     ORANGE_LOG_INFO(ORANGE_LOG_ROOT()) << g_unordered_map_str_int_value_config->toString();
 
     tes_yaml();
-
     test_config();
+    test_class();
 
     return 0;
 }
