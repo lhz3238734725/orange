@@ -10,6 +10,7 @@
 | 2025.2.13 | yaml-cpp集成到配置系统 |
 | 2025.2.18 | 复杂类型 std::vector<普通类型> 的支持 |
 | 2025.2.19 | 更多容器的支持 std::list std::set std::unordered_set std::map std::unordered_map |
+| 2025.2.20 | 1.相同key值, 类型不同不报错的bug <br> 2.自定义类型的支持 |
 
 ## 环境搭建
 系统：ubutun2004  
